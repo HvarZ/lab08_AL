@@ -16,10 +16,9 @@ include("tools/gate/cmake/HunterGate.cmake")
 HunterGate(
         URL "https://github.com/cpp-pm/hunter/archive/v0.23.278.tar.gz"
         SHA1 "35fa55bc1dfcf9f4d7264f8bb26cd1759ce1ae07"
-        # FILEPATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/config.cmake"
 )
 
-project(suggestclient)
+project(grpcclient)
 string(APPEND CMAKE_CXX_FLAGS " -pedantic -Werror -Wall -Wextra")
 string(APPEND CMAKE_CXX_FLAGS " -Wno-unused-command-line-argument -Wno-unused-parameter")
 string(APPEND CMAKE_CXX_FLAGS " -Wshadow -Wnon-virtual-dtor")
@@ -29,6 +28,8 @@ find_package(GTest CONFIG REQUIRED)
 
 hunter_add_package(gRPC)
 find_package(gRPC CONFIG REQUIRED)
+
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/third-party/suggest)
 
 set(API_GENERATED_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third-party/suggest/ccpkg)
 
@@ -56,29 +57,40 @@ set(PROTO_GENERATED_GRPC_HEADERS
         "${API_GENERATED_DIR}/google/api/http.grpc.pb.h"
         "${API_GENERATED_DIR}/google/rpc/status.grpc.pb.h")
 
+set_source_files_properties(
+        ${PROTO_GENERATED_SOURCES}
+        ${PROTO_GENERATED_HEADERS}
+        ${PROTO_GENERATED_GRPC_SOURCES}
+        ${PROTO_GENERATED_GRPC_HEADERS}
+        PROPERTIES GENERATED TRUE
+)
+
 add_executable(grpc_client
         ${CMAKE_CURRENT_SOURCE_DIR}/sources/main.cpp
         ${PROTO_GENERATED_SOURCES}
         ${PROTO_GENERATED_GRPC_SOURCES})
 
+add_dependencies(grpc_client generate)
+
 target_include_directories(grpc_client PRIVATE "${API_GENERATED_DIR}")
 
-target_link_libraries(grpc_client
+target_link_libraries(grpc_client PRIVATE
         gRPC::grpc++ gRPC::grpc++_reflection)
 
-add_executable(tests
-        # TODO: enum your files and delete this comment
-        ${CMAKE_CURRENT_SOURCE_DIR}/tests/test.cpp)
+if ("${CMAKE_PROJECT_NAME}" STREQUAL "${PROJECT_NAME}")
+    add_executable(tests
+            ${CMAKE_CURRENT_SOURCE_DIR}/tests/test.cpp)
 
-target_link_libraries(tests GTest::gtest_main)
+    target_link_libraries(tests PRIVATE GTest::gtest_main grpc_client)
 
-enable_testing()
-add_test(NAME unit_tests COMMAND tests)
+    enable_testing()
+    add_test(NAME unit_tests COMMAND tests)
+endif()
 
 if(BUILD_COVERAGE)
     function(ENABLE_PROJECT_COVERAGE PROJECT)
         target_compile_options(${PROJECT} PRIVATE --coverage)
-        target_link_libraries(${PROJECT} --coverage)
+        target_link_libraries(${PROJECT} PRIVATE --coverage)
         add_coverage(${PROJECT})
     endfunction()
 
@@ -86,7 +98,9 @@ if(BUILD_COVERAGE)
     list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
     find_package(codecov)
     enable_project_coverage(grpc_client)
-    enable_project_coverage(tests)
+    if ("${CMAKE_PROJECT_NAME}" STREQUAL "${PROJECT_NAME}")
+        enable_project_coverage(tests)
+    endif()
     list(APPEND LCOV_REMOVE_PATTERNS "'${PROJECT_SOURCE_DIR}/tests/*'")
     coverage_evaluate()
 endif()
