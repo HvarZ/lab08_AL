@@ -18,7 +18,7 @@ HunterGate(
         SHA1 "35fa55bc1dfcf9f4d7264f8bb26cd1759ce1ae07"
 )
 
-project(suggestclient)
+project(grpcclient)
 string(APPEND CMAKE_CXX_FLAGS " -pedantic -Werror -Wall -Wextra")
 string(APPEND CMAKE_CXX_FLAGS " -Wno-unused-command-line-argument -Wno-unused-parameter")
 string(APPEND CMAKE_CXX_FLAGS " -Wshadow -Wnon-virtual-dtor")
@@ -82,7 +82,7 @@ if ("${CMAKE_PROJECT_NAME}" STREQUAL "${PROJECT_NAME}")
             # TODO: enum your files and delete this comment
             ${CMAKE_CURRENT_SOURCE_DIR}/tests/test.cpp)
 
-    target_link_libraries(tests PRIVATE GTest::gtest_main lab07)
+    target_link_libraries(tests PRIVATE GTest::gtest_main grpc_client)
 
     enable_testing()
     add_test(NAME unit_tests COMMAND tests)
@@ -98,7 +98,6 @@ if(BUILD_COVERAGE)
     set(ENABLE_COVERAGE ON CACHE BOOL "Enable coverage build." FORCE)
     list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
     find_package(codecov)
-    # TODO: change template word to project name and delete this comment
     enable_project_coverage(grpc_client)
     if ("${CMAKE_PROJECT_NAME}" STREQUAL "${PROJECT_NAME}")
         enable_project_coverage(tests)
