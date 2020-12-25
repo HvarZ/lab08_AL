@@ -23,6 +23,8 @@ string(APPEND CMAKE_CXX_FLAGS " -pedantic -Werror -Wall -Wextra")
 string(APPEND CMAKE_CXX_FLAGS " -Wno-unused-command-line-argument -Wno-unused-parameter")
 string(APPEND CMAKE_CXX_FLAGS " -Wshadow -Wnon-virtual-dtor")
 
+hunter_add_package(GTest)
+find_package(GTest CONFIG REQUIRED)
 
 hunter_add_package(gRPC)
 find_package(gRPC CONFIG REQUIRED)
@@ -75,6 +77,15 @@ target_include_directories(grpc_client PRIVATE "${API_GENERATED_DIR}")
 target_link_libraries(grpc_client PRIVATE
         gRPC::grpc++ gRPC::grpc++_reflection)
 
+if ("${CMAKE_PROJECT_NAME}" STREQUAL "${PROJECT_NAME}")
+    add_executable(tests
+            ${CMAKE_CURRENT_SOURCE_DIR}/tests/test.cpp)
+
+    target_link_libraries(tests PRIVATE GTest::gtest_main lab07)
+
+    enable_testing()
+    add_test(NAME unit_tests COMMAND tests)
+endif()
 
 if(BUILD_COVERAGE)
     function(ENABLE_PROJECT_COVERAGE PROJECT)
