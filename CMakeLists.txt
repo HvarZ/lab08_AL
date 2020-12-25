@@ -79,10 +79,8 @@ target_link_libraries(grpc_client PRIVATE
 
 if ("${CMAKE_PROJECT_NAME}" STREQUAL "${PROJECT_NAME}")
     add_executable(tests
-            # TODO: enum your files and delete this comment
             ${CMAKE_CURRENT_SOURCE_DIR}/tests/test.cpp)
 
-    target_link_libraries(tests PRIVATE GTest::gtest_main grpc_client)
 
     enable_testing()
     add_test(NAME unit_tests COMMAND tests)
