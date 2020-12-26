@@ -57,27 +57,18 @@ set(PROTO_GENERATED_GRPC_HEADERS
         "${API_GENERATED_DIR}/google/api/http.grpc.pb.h"
         "${API_GENERATED_DIR}/google/rpc/status.grpc.pb.h")
 
-set_source_files_properties(
-        ${PROTO_GENERATED_SOURCES}
-        ${PROTO_GENERATED_HEADERS}
-        ${PROTO_GENERATED_GRPC_SOURCES}
-        ${PROTO_GENERATED_GRPC_HEADERS}
-        PROPERTIES GENERATED TRUE
-)
 
 add_executable(grpc_client
         ${CMAKE_CURRENT_SOURCE_DIR}/sources/main.cpp
         ${PROTO_GENERATED_SOURCES}
         ${PROTO_GENERATED_GRPC_SOURCES})
 
-add_dependencies(grpc_client generate)
 
 target_include_directories(grpc_client PRIVATE "${API_GENERATED_DIR}")
 
 target_link_libraries(grpc_client PRIVATE
         gRPC::grpc++ gRPC::grpc++_reflection)
 
-if ("${CMAKE_PROJECT_NAME}" STREQUAL "${PROJECT_NAME}")
     add_executable(tests
             ${CMAKE_CURRENT_SOURCE_DIR}/tests/test.cpp)
 
@@ -85,7 +76,6 @@ if ("${CMAKE_PROJECT_NAME}" STREQUAL "${PROJECT_NAME}")
 
     enable_testing()
     add_test(NAME unit_tests COMMAND tests)
-endif()
 
 if(BUILD_COVERAGE)
     function(ENABLE_PROJECT_COVERAGE PROJECT)
@@ -98,9 +88,7 @@ if(BUILD_COVERAGE)
     list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
     find_package(codecov)
     enable_project_coverage(grpc_client)
-    if ("${CMAKE_PROJECT_NAME}" STREQUAL "${PROJECT_NAME}")
-        enable_project_coverage(tests)
-    endif()
+    enable_project_coverage(tests)
     list(APPEND LCOV_REMOVE_PATTERNS "'${PROJECT_SOURCE_DIR}/tests/*'")
     coverage_evaluate()
 endif()
