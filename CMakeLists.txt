@@ -70,7 +70,7 @@ target_link_libraries(grpc_client PRIVATE
     add_executable(tests
             ${CMAKE_CURRENT_SOURCE_DIR}/tests/test.cpp)
 
-    target_link_libraries(tests PRIVATE GTest::gtest_main lab07)
+    target_link_libraries(tests PRIVATE GTest::gtest_main)
 
     enable_testing()
     add_test(NAME unit_tests COMMAND tests)
